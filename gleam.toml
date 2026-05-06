@@ -1,0 +1,21 @@
+name = "fhir_client_httpc"
+version = "0.6.0"
+
+description = "example r4 httpc client - see https://hexdocs.pm/fhir/ "
+licences = ["MIT"]
+repository = { type = "github", user = "PotatoEMR", repo = "fhir_client_httpc" }
+
+links = [
+  { title = "Documentation", href = "https://hexdocs.pm/fhir/" },
+]
+
+[dependencies]
+gleam_stdlib = ">= 0.44.0 and < 2.0.0"
+fhir = { path = "../gleam-fhir" }
+gleam_http = ">= 4.3.0 and < 5.0.0"
+gleam_json = ">= 3.1.0 and < 4.0.0"
+gleam_httpc = ">= 5.0.0 and < 6.0.0"
+
+[dev_dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"
+gleam_time = ">= 1.7.0 and < 2.0.0"
