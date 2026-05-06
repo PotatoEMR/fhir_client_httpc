@@ -1,7 +1,7 @@
 name = "fhir_client_httpc"
 version = "0.6.0"
 
-description = "example r4 httpc client - see https://hexdocs.pm/fhir/ "
+description = "r4 httpc client layer - see https://hexdocs.pm/fhir/ "
 licences = ["MIT"]
 repository = { type = "github", user = "PotatoEMR", repo = "fhir_client_httpc" }
 
