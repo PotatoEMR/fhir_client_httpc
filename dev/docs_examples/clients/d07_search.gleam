@@ -1,6 +1,7 @@
 import fhir/r4/client_httpc
 import fhir/r4/resources
 import fhir/r4/sansio
+import fhir/r4/search_params
 import gleam/http/request.{type Request}
 import gleam/httpc
 import gleam/int
@@ -16,7 +17,7 @@ pub fn main() {
   //get patient list
   let patients: Result(List(resources.Patient), client_httpc.Err) =
     client_httpc.patient_search(
-      sansio.SpPatient(..sansio.sp_patient_new(), name: Some("Mike")),
+      search_params.Patient(..search_params.patient_new(), name: Some("Mike")),
       client,
     )
   let assert Ok(pats1) = patients
@@ -24,7 +25,7 @@ pub fn main() {
   //get bundle and convert to patient list
   let pat_bundle: Result(resources.Bundle, client_httpc.Err) =
     client_httpc.patient_search_bundled(
-      sansio.SpPatient(..sansio.sp_patient_new(), name: Some("Mike")),
+      search_params.Patient(..search_params.patient_new(), name: Some("Mike")),
       client,
     )
   let assert Ok(bundle) = pat_bundle
@@ -39,7 +40,7 @@ pub fn main() {
   // limit each bundle to 10 patients with _count=10
   // and keep getting bundles as long as the server has more with all_pages
   let assert Ok(bundle) =
-    client_httpc.search_any("name=e&_count=10", "Patient", client)
+    client_httpc.search_any("name=e&_count=10", resources.RtPatient, client)
     |> client_httpc.all_pages(client)
   bundle |> resources.bundle_to_json |> json.to_string |> io.println
   bundle.entry |> list.length |> int.to_string |> io.println
@@ -93,7 +94,7 @@ fn send_bundle_req(
   {
     Error(_) -> Error("http error")
     Ok(resp) ->
-      case sansio.bundle_resp(resp) {
+      case sansio.any_resp(resp, resources.bundle_decoder(), "Bundle") {
         Error(_) -> Error("parse error")
         Ok(bundle) -> Ok(bundle)
       }

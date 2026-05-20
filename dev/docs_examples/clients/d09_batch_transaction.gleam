@@ -32,8 +32,14 @@ pub fn main() {
   // but since this is only safe in controlled circumstances,
   // servers may choose to assign new ids to all submitted resources,
   // irrespective of any claimed logical id in the resource
-  let assert Ok(upsert_req) = sansio.patient_update_req(joe, client)
-  let read_req = sansio.patient_read_req(pat_id, client)
+  let assert Ok(upsert_req) =
+    sansio.any_update_req(
+      joe.id,
+      resources.patient_to_json(joe),
+      "Patient",
+      client,
+    )
+  let read_req = sansio.any_read_req(pat_id, "Patient", client)
   let assert Ok(batch_bundle) =
     client_httpc.batch([upsert_req, read_req], sansio.Transaction, client)
   batch_bundle |> resources.bundle_to_json |> json.to_string |> io.println
