@@ -48,7 +48,7 @@ pub fn main() {
   // same thing using sansio.bundle_next_page_req,
   // returning a List(Bundle) instead of pretending we get just one Bundle
   let first =
-    sansio.any_search_req("name=e&_count=10", "Patient", client)
+    sansio.any_search_req("name=e&_count=10", resources.RtPatient, client)
     |> send_bundle_req
   let assert Ok(bundles) = all_pages_loop(first, [], client)
   bundles
@@ -94,7 +94,9 @@ fn send_bundle_req(
   {
     Error(_) -> Error("http error")
     Ok(resp) ->
-      case sansio.any_resp(resp, resources.bundle_decoder(), "Bundle") {
+      case
+        sansio.any_resp(resp, resources.bundle_decoder(), resources.RtBundle)
+      {
         Error(_) -> Error("parse error")
         Ok(bundle) -> Ok(bundle)
       }

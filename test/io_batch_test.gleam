@@ -51,10 +51,10 @@ pub fn io_batch_test() {
     sansio.any_update_req(
       joe.id,
       resources.patient_to_json(joe),
-      "Patient",
+      resources.RtPatient,
       client,
     )
-  let read_req = sansio.any_read_req(pat_id, "Patient", client)
+  let read_req = sansio.any_read_req(pat_id, resources.RtPatient, client)
   let assert Ok(batch_bundle) =
     client_httpc.batch([upsert_req, read_req], sansio.Transaction, client)
   // batch_bundle |> resources.bundle_to_json |> json.to_string |> io.println
