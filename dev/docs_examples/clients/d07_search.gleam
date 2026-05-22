@@ -40,7 +40,7 @@ pub fn main() {
   // limit each bundle to 10 patients with _count=10
   // and keep getting bundles as long as the server has more with all_pages
   let assert Ok(bundle) =
-    client_httpc.search_any("name=e&_count=10", resources.RtPatient, client)
+    client_httpc.search_any("name=e&_count=20", resources.RtPatient, client)
     |> client_httpc.all_pages(client)
   bundle |> resources.bundle_to_json |> json.to_string |> io.println
   bundle.entry |> list.length |> int.to_string |> io.println
@@ -48,7 +48,7 @@ pub fn main() {
   // same thing using sansio.bundle_next_page_req,
   // returning a List(Bundle) instead of pretending we get just one Bundle
   let first =
-    sansio.any_search_req("name=e&_count=10", resources.RtPatient, client)
+    sansio.any_search_req("name=e&_count=20", resources.RtPatient, client)
     |> send_bundle_req
   let assert Ok(bundles) = all_pages_loop(first, [], client)
   bundles
@@ -57,6 +57,33 @@ pub fn main() {
   })
   |> int.to_string
   |> io.println
+
+  // each bundle entry normally has Option(Resource)
+  // and normal Bundle fail to decode if a single resource is invalid
+  //
+  // instead forgiving bundle entry Option(Result(Resource, List(decode.DecodeError)))
+  // and BundleForgiving will still decode if resource(s) invalid
+  // but each individual entry can be either a resource or decode error
+  let assert Ok(lenient_bundle) =
+    client_httpc.search_any_forgiving(
+      "name=e&_count=20",
+      resources.RtPatient,
+      client,
+    )
+    |> client_httpc.all_pages_forgiving(client)
+  let #(good, bad) =
+    list.fold(from: #(0, 0), over: lenient_bundle.entry, with: fn(acc, entry) {
+      case entry.resource {
+        None -> acc
+        // don't expect to get any of these entry without resource though
+        Some(Ok(_)) -> #(acc.0 + 1, acc.1)
+        Some(Error(_)) -> #(acc.0, acc.1 + 1)
+      }
+    })
+  io.println("good:")
+  good |> int.to_string |> io.println
+  io.println("bad:")
+  bad |> int.to_string |> io.println
 }
 
 /// search each bundle and return list of all bundles

@@ -146,7 +146,7 @@ pub fn all_pages(
 /// searchs each bundle and returns list
 /// also returns last bundle individually
 /// because all_pages smushes everything in there
-pub fn all_pages_loop(
+fn all_pages_loop(
   curr_bundle: Result(resources.Bundle, Err),
   acc_bundles: List(resources.Bundle),
   client: FhirClient,
@@ -170,6 +170,63 @@ pub fn all_pages_loop(
       }
     }
   }
+}
+
+pub fn all_pages_forgiving(
+  first_bundle: Result(resources.BundleForgiving, Err),
+  client: FhirClient,
+) -> Result(resources.BundleForgiving, Err) {
+  case all_pages_loop_forgiving(first_bundle, [], client) {
+    Error(err) -> Error(err)
+    Ok(#(last_bundle, bundles)) -> {
+      let entries =
+        list.fold(from: [], over: bundles, with: fn(acc, bundle) {
+          list.append(bundle.entry, acc)
+        })
+      Ok(resources.BundleForgiving(..last_bundle, entry: entries, link: []))
+    }
+  }
+}
+
+// arguably very duplicated, maybe should be combined somehow
+fn all_pages_loop_forgiving(
+  curr_bundle: Result(resources.BundleForgiving, Err),
+  acc_bundles: List(resources.BundleForgiving),
+  client: FhirClient,
+) -> Result(#(resources.BundleForgiving, List(resources.BundleForgiving)), Err) {
+  case curr_bundle {
+    Error(err) -> Error(err)
+    Ok(curr_bundle) -> {
+      let acc_bundles = [curr_bundle, ..acc_bundles]
+      case sansio.bundle_next_page_req_forgiving(curr_bundle, client) {
+        // Error(_) -> reached last page
+        Error(_) -> Ok(#(curr_bundle, acc_bundles))
+        Ok(req) -> {
+          let next =
+            sendreq_parseresource(
+              req,
+              resources.bundle_decoder_forgiving(),
+              resources.RtBundle,
+            )
+          all_pages_loop_forgiving(next, acc_bundles, client)
+        }
+      }
+    }
+  }
+}
+
+/// instead of failing whole decoder on bundle entry with invalid resource,
+/// return valid resources alongside list of errors
+pub fn search_any_forgiving(
+  search_string: String,
+  res_type: resources.ResourceType,
+  client: FhirClient,
+) -> Result(resources.BundleForgiving, Err) {
+  sansio.any_search_req(search_string, res_type, client)
+  |> sendreq_parseresource(
+    resources.bundle_decoder_forgiving(),
+    resources.RtBundle,
+  )
 }
 
 /// run any operation string on any resource type, optionally using Parameters
