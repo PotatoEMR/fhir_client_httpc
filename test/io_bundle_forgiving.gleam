@@ -1,11 +1,11 @@
 import fhir/r4/client_httpc
 import fhir/r4/resources
+import fhir/r4/sansio
 import gleam/list
 import gleam/option.{None, Some}
 
 pub fn main() {
-  let assert Ok(client) =
-    client_httpc.fhirclient_new("https://hapi.fhir.org/baseR4/")
+  let assert Ok(client) = sansio.fhirclient_new("https://hapi.fhir.org/baseR4/")
   let assert Ok(mixed_bundle) =
     client_httpc.search_any_forgiving(
       "_count=100",

@@ -1,6 +1,7 @@
 import fhir/r4/client_httpc
 import fhir/r4/complex_types as ct
 import fhir/r4/resources
+import fhir/r4/sansio
 import fhir/r4/valuesets
 
 import gleam/option.{None, Some}
@@ -28,8 +29,7 @@ pub fn io_operation_test() {
       gender: Some(valuesets.AdministrativegenderMale),
     )
 
-  let assert Ok(client) =
-    client_httpc.fhirclient_new("https://r4.smarthealthit.org/")
+  let assert Ok(client) = sansio.fhirclient_new("https://r4.smarthealthit.org/")
 
   let params =
     resources.Parameters(..resources.parameters_new(), parameter: [

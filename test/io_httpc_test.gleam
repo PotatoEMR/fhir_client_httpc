@@ -52,8 +52,7 @@ pub fn normal_r4_test() {
       ),
     )
 
-  let assert Ok(client) =
-    client_httpc.fhirclient_new("https://r4.smarthealthit.org")
+  let assert Ok(client) = sansio.fhirclient_new("https://r4.smarthealthit.org")
 
   let assert Ok(created) = client_httpc.patient_create(joe, client)
   let assert Some(id) = created.id
