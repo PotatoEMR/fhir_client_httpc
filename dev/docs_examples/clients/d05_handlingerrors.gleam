@@ -36,7 +36,7 @@ pub fn main() {
             client_httpc.ErrParseJson(err) ->
               case err {
                 json.UnableToDecode(errors) ->
-                  "error parsing json: "
+                  "error parsing json from server: "
                   <> list.map(errors, fn(error) {
                     let decode.DecodeError(expected:, found:, path:) = error
                     "expected "
@@ -47,7 +47,7 @@ pub fn main() {
                     <> string.join(path, "/")
                   })
                   |> string.join(";")
-                _ -> "bad json"
+                _ -> "server sent bad json"
               }
           }
       }
