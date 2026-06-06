@@ -21,11 +21,25 @@ pub type ErrFromSansio {
   ///got json but could not parse it, probably a missing required field
   ErrParseJson(json.DecodeError)
   ///did not get resource json, often server eg nginx gives basic html response
-  ErrNotJson(Response(String))
+  ErrServer(Response(String))
   ///got operationoutcome error from fhir server
   ErrOperationoutcome(resources.Operationoutcome)
   ///could not make an update or delete request because resource has no id
   ErrNoId
+}
+
+pub fn err_to_string(err: Err) -> String {
+  case err {
+    ErrSansio(err:) ->
+      case err {
+        ErrParseJson(err) -> sansio.err_resp_to_string(sansio.ErrParseJson(err))
+        ErrServer(err) -> sansio.err_resp_to_string(sansio.ErrServer(err))
+        ErrOperationoutcome(err) ->
+          sansio.err_resp_to_string(sansio.ErrOperationoutcome(err))
+        ErrNoId -> sansio.err_req_to_string
+      }
+    ErrHttpc(err:) -> http_err_to_string(err)
+  }
 }
 
 fn any_create(
@@ -78,7 +92,7 @@ pub fn any_delete(
           Error(
             ErrSansio(case err {
               sansio.ErrParseJson(e) -> ErrParseJson(e)
-              sansio.ErrNotJson(e) -> ErrNotJson(e)
+              sansio.ErrServer(e) -> ErrServer(e)
               sansio.ErrOperationoutcome(e) -> ErrOperationoutcome(e)
             }),
           )
@@ -251,7 +265,7 @@ fn sendreq_parseresource(
           Error(
             ErrSansio(case err {
               sansio.ErrParseJson(e) -> ErrParseJson(e)
-              sansio.ErrNotJson(e) -> ErrNotJson(e)
+              sansio.ErrServer(e) -> ErrServer(e)
               sansio.ErrOperationoutcome(e) -> ErrOperationoutcome(e)
             }),
           )
