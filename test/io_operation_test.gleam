@@ -45,7 +45,6 @@ pub fn io_operation_test() {
       res_type: resources.RtPatient,
       res_id: None,
       res_decoder: resources.operationoutcome_decoder(),
-      return_res_type: resources.RtOperationoutcome,
       client:,
     )
 
@@ -57,7 +56,6 @@ pub fn io_operation_test() {
       res_type: resources.RtPatient,
       res_id: created.id,
       res_decoder: resources.bundle_decoder(),
-      return_res_type: resources.RtBundle,
       client:,
     )
   let assert Ok(_) = client_httpc.patient_delete(created, client)

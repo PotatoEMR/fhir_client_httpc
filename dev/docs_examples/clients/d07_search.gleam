@@ -119,9 +119,7 @@ fn send_bundle_req(
   {
     Error(_) -> Error("http error")
     Ok(resp) ->
-      case
-        sansio.any_resp(resp, resources.bundle_decoder(), resources.RtBundle)
-      {
+      case sansio.any_response(resp, resources.bundle_decoder()) {
         Error(_) -> Error("parse error")
         Ok(bundle) -> Ok(bundle)
       }
